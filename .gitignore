@@ -1,6 +1,9 @@
 # Created by https://www.toptal.com/developers/gitignore/api/git,venv,python,dotenv
 # Edit at https://www.toptal.com/developers/gitignore?templates=git,venv,python,dotenv
 
+libpng/
+oss-fuzz*/
+
 ### dotenv ###
 .env
 

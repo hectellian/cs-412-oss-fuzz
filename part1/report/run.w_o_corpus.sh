@@ -67,10 +67,10 @@ python3 infra/helper.py coverage "$PROJECT" \
   --no-serve
 
 # copy the coverage report to the submission folder
-DESTDIR="$WORKDIR/part1/report/w_corpus"
+DESTDIR="$WORKDIR/part1/report/w_o_corpus"
 mkdir -p "$DESTDIR"
 rm -rf "${DESTDIR:?}"/*
 
 cp -r "$COVERAGE_DIR"/* "$DESTDIR"/
 
-echo "[+] Coverage report with seeds at $DESTDIR/index.html"
+echo "[+] Coverage report without seeds at $DESTDIR/index.html"
