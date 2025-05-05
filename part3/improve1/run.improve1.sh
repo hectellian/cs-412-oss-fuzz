@@ -10,10 +10,10 @@ TIMEOUT="14400" # 4h
 WORKDIR="$(pwd)"
 OSS_FUZZ_DIR="$WORKDIR/oss-fuzz-improve1"
 LIBPNG_DIR="$WORKDIR/libpng-improve1"
-REPORT_DIR="$WORKDIR/part3/improve1/report"
+REPORT_DIR="$WORKDIR/part3/improve1/coverage_improve1"
 BUILD_DIR="$OSS_FUZZ_DIR/build/out"
 COVERAGE_DIR="$BUILD_DIR/libpng/report_target/libpng_read_fuzzer/linux"
-CORPUS_DIR="$BUILD_DIR/improve1_corpus"
+CORPUS_DIR="$WORKDIR/part3/improve1/seeds"
 
 if [ ! -d "$LIBPNG_DIR" ] ; then
     git clone "$LIBPNG_REPO" "$LIBPNG_DIR" --branch "$BRANCH"
@@ -63,7 +63,7 @@ python3 infra/helper.py coverage "$PROJECT" \
   --no-serve
 
 # copy the coverage report to the submission folder
-DESTDIR="$REPORT_DIR/html"
+DESTDIR="$REPORT_DIR"
 mkdir -p "$DESTDIR"
 rm -rf "${DESTDIR:?}"/*
 
