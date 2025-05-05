@@ -36,6 +36,10 @@ index 0000000..1111111
 +    val = f"value{i}"
 +    create_png(f"seed/fuzz{i}.png", key, val)
 +
+Binary files /dev/null and b/contrib/oss-fuzz/seed/fuzz1.png differ
+diff --git a/contrib/oss-fuzz/seed/fuzz1.png b/contrib/oss-fuzz/seed/fuzz1.png
+new file mode 100644
+index 0000000..1111111
 diff --git a/contrib/oss-fuzz/seed/fuzz2.png b/contrib/oss-fuzz/seed/fuzz2.png
 new file mode 100644
 index 0000000..1111111
@@ -75,36 +79,3 @@ Binary files /dev/null and b/contrib/oss-fuzz/seed/fuzz10.png differ
 diff --git a/contrib/oss-fuzz/seed/fuzz11.png b/contrib/oss-fuzz/seed/fuzz11.png
 new file mode 100644
 index 0000000..1111111
-Binary files /dev/null and b/contrib/oss-fuzz/seed/fuzz11.png differ
-diff --git a/contrib/oss-fuzz/seed/fuzz12.png b/contrib/oss-fuzz/seed/fuzz12.png
-new file mode 100644
-index 0000000..1111111
-Binary files /dev/null and b/contrib/oss-fuzz/seed/fuzz12.png differ
-diff --git a/contrib/oss-fuzz/seed/fuzz13.png b/contrib/oss-fuzz/seed/fuzz13.png
-new file mode 100644
-index 0000000..1111111
-Binary files /dev/null and b/contrib/oss-fuzz/seed/fuzz13.png differ
-diff --git a/contrib/oss-fuzz/seed/fuzz14.png b/contrib/oss-fuzz/seed/fuzz14.png
-new file mode 100644
-index 0000000..1111111
-Binary files /dev/null and b/contrib/oss-fuzz/seed/fuzz14.png differ
-diff --git a/contrib/oss-fuzz/seed/fuzz15.png b/contrib/oss-fuzz/seed/fuzz15.png
-new file mode 100644
-index 0000000..1111111
-Binary files /dev/null and b/contrib/oss-fuzz/seed/fuzz15.png differ
-diff --git a/contrib/oss-fuzz/seed/fuzz16.png b/contrib/oss-fuzz/seed/fuzz16.png
-new file mode 100644
-index 0000000..1111111
-Binary files /dev/null and b/contrib/oss-fuzz/seed/fuzz16.png differ
-diff --git a/contrib/oss-fuzz/seed/fuzz17.png b/contrib/oss-fuzz/seed/fuzz17.png
-new file mode 100644
-index 0000000..1111111
-Binary files /dev/null and b/contrib/oss-fuzz/seed/fuzz17.png differ
-diff --git a/contrib/oss-fuzz/seed/fuzz18.png b/contrib/oss-fuzz/seed/fuzz18.png
-new file mode 100644
-index 0000000..1111111
-Binary files /dev/null and b/contrib/oss-fuzz/seed/fuzz18.png differ
-diff --git a/contrib/oss-fuzz/seed/fuzz19.png b/contrib/oss-fuzz/seed/fuzz19.png
-new file mode 100644
-index 0000000..1111111
-Binary files /dev/null and b/contrib/oss-fuzz/seed/fuzz19.png differ
