@@ -1,0 +1,12 @@
+diff --git a/projects/libpng/Dockerfile b/projects/libpng/Dockerfile
+index 6f281cd55..b314eaf9a 100644
+--- a/projects/libpng/Dockerfile
++++ b/projects/libpng/Dockerfile
+@@ -19,6 +19,6 @@ RUN apt-get update && \
+     apt-get install -y make autoconf automake libtool zlib1g-dev
+
+RUN git clone --depth 1 https://github.com/madler/zlib.git
+-RUN git clone --depth 1 https://github.com/pnggroup/libpng.git
++RUN git clone --depth 1 https://github.com/hectellian/libpng.git --branch no-seed-corpus
+RUN cp libpng/contrib/oss-fuzz/build.sh $SRC
+WORKDIR libpng
