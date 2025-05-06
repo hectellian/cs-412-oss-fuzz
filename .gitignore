@@ -2,7 +2,11 @@
 # Edit at https://www.toptal.com/developers/gitignore?templates=git,venv,python,dotenv
 
 libpng/
+libpng*/
+libpng-*/
+oss-fuzz/
 oss-fuzz*/
+oss-fuzz-*/
 
 ### dotenv ###
 .env

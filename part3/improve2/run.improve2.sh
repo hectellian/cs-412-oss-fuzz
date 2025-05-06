@@ -6,11 +6,12 @@ LIBPNG_REPO="https://github.com/hectellian/libpng.git"
 PROJECT="libpng"
 PROJECT_FUZZER="libpng_read_fuzzer"
 BRANCH="improve2"
-TIMEOUT="14400" # 4h
+TIMEOUT="5" # 4h
 WORKDIR="$(pwd)"
 OSS_FUZZ_DIR="$WORKDIR/oss-fuzz-improve2"
 LIBPNG_DIR="$WORKDIR/libpng-improve2"
 REPORT_DIR="$WORKDIR/part3/improve2/coverage_improve2"
+DIFF_DIR="$WORKDIR/part3/improve2"
 BUILD_DIR="$OSS_FUZZ_DIR/build/out"
 COVERAGE_DIR="$BUILD_DIR/libpng/report_target/libpng_read_fuzzer/linux"
 CORPUS_DIR="$WORKDIR/part3/improve2/seeds"
@@ -27,13 +28,13 @@ fi
 mkdir -p "$REPORT_DIR"
 
 pushd "$LIBPNG_DIR" >/dev/null
-git diff HEAD^ > "$REPORT_DIR/project.diff"
-echo "[+] Wrote libpng diff to $REPORT_DIR/project.diff"
+git diff HEAD^ > "$DIFF_DIR/project.diff"
+echo "[+] Wrote libpng diff to $DIFF_DIR/project.diff"
 popd >/dev/null
 
 pushd "$OSS_FUZZ_DIR" >/dev/null
-git diff HEAD^ > "$REPORT_DIR/oss-fuzz.diff"
-echo "[+] Wrote oss-fuzz diff to $REPORT_DIR/oss-fuzz.diff"
+git diff HEAD^ > "$DIFF_DIR/oss-fuzz.diff"
+echo "[+] Wrote oss-fuzz diff to $DIFF_DIR/oss-fuzz.diff"
 popd >/dev/null
 
 # build the libpng fuzzers

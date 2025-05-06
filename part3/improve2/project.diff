@@ -1,0 +1,13 @@
+diff --git a/contrib/oss-fuzz/libpng_read_fuzzer.cc b/contrib/oss-fuzz/libpng_read_fuzzer.cc
+index bfb5d9d3d..eb1597990 100644
+--- a/contrib/oss-fuzz/libpng_read_fuzzer.cc
++++ b/contrib/oss-fuzz/libpng_read_fuzzer.cc
+@@ -154,6 +154,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+ 
+   // Reading.
+   png_read_info(png_handler.png_ptr, png_handler.info_ptr);
++  // Enable filler byte insertion to cover png_set_filler region
++  png_set_filler(png_handler.png_ptr, 0xFF, PNG_FILLER_AFTER);
+ 
+   // reset error handler to put png_deleter into scope.
+   if (setjmp(png_jmpbuf(png_handler.png_ptr))) {

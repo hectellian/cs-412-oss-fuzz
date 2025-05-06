@@ -1,27 +1,12 @@
 diff --git a/projects/libpng/Dockerfile b/projects/libpng/Dockerfile
-index 6f281cd..b314eaf 100644
+index 6f281cd55..5ab32a106 100644
 --- a/projects/libpng/Dockerfile
 +++ b/projects/libpng/Dockerfile
-@@ -19,7 +19,7 @@ RUN apt-get update && \
-  apt-get install -y make autoconf automake libtool zlib1g-dev
-
+@@ -19,6 +19,6 @@ RUN apt-get update && \
+     apt-get install -y make autoconf automake libtool zlib1g-dev
+ 
  RUN git clone --depth 1 https://github.com/madler/zlib.git
 -RUN git clone --depth 1 https://github.com/pnggroup/libpng.git
 +RUN git clone --depth 1 https://github.com/hectellian/libpng.git --branch improve2
  RUN cp libpng/contrib/oss-fuzz/build.sh $SRC
  WORKDIR libpng
-
-diff --git a/contrib/oss-fuzz/libpng_read_fuzzer.cc b/contrib/oss-fuzz/libpng_read_fuzzer.cc
-index e29278e..4b2a9ac 100644
---- a/contrib/oss-fuzz/libpng_read_fuzzer.cc
-+++ b/contrib/oss-fuzz/libpng_read_fuzzer.cc
-@@ -68,6 +68,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-      png_create_info_struct(png_ptr);
-      if (!info_ptr) return 0;
-
-+    // Improvement: enable filler insertion to reach png_set_filler logic
-+    png_set_filler(png_ptr, 0xFF, PNG_FILLER_AFTER);
-+
-      if (setjmp(png_jmpbuf(png_ptr))) return 0;
-
-      png_set_read_fn(png_ptr, &png_memio, user_read_data);
