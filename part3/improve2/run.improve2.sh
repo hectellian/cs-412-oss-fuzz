@@ -14,7 +14,7 @@ REPORT_DIR="$WORKDIR/part3/improve2/coverage_improve2"
 DIFF_DIR="$WORKDIR/part3/improve2"
 BUILD_DIR="$OSS_FUZZ_DIR/build/out"
 COVERAGE_DIR="$BUILD_DIR/libpng/report_target/libpng_read_fuzzer/linux"
-CORPUS_DIR="$WORKDIR/part3/improve2/seeds"
+CORPUS_DIR="$BUILD_DIR/improve2_corpus"
 
 if [ ! -d "$LIBPNG_DIR" ] ; then
     git clone "$LIBPNG_REPO" "$LIBPNG_DIR" --branch "$BRANCH"
