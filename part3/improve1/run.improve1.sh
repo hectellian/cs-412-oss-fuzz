@@ -10,7 +10,7 @@ TIMEOUT="14400" # 4h
 WORKDIR="$(pwd)"
 OSS_FUZZ_DIR="$WORKDIR/oss-fuzz-improve1"
 LIBPNG_DIR="$WORKDIR/libpng-improve1"
-REPORT_DIR="$WORKDIR/part3/improve1/coverage_improve1"
+REPORT_DIR="$WORKDIR/part3/improve1"
 BUILD_DIR="$OSS_FUZZ_DIR/build/out"
 COVERAGE_DIR="$BUILD_DIR/libpng/report_target/libpng_read_fuzzer/linux"
 CORPUS_DIR="$BUILD_DIR/improve1_corpus"
@@ -27,12 +27,12 @@ fi
 mkdir -p "$REPORT_DIR"
 
 pushd "$LIBPNG_DIR" >/dev/null
-git diff HEAD^ > "$REPORT_DIR/project.diff"
+git diff origin/libpng16...HEAD > "$REPORT_DIR/project.diff"
 echo "[+] Wrote libpng diff to $REPORT_DIR/project.diff"
 popd >/dev/null
 
 pushd "$OSS_FUZZ_DIR" >/dev/null
-git diff HEAD^ > "$REPORT_DIR/oss-fuzz.diff"
+git diff origin/master...HEAD > "$REPORT_DIR/oss-fuzz.diff"
 echo "[+] Wrote oss-fuzz diff to $REPORT_DIR/oss-fuzz.diff"
 popd >/dev/null
 
@@ -63,7 +63,7 @@ python3 infra/helper.py coverage "$PROJECT" \
   --no-serve
 
 # copy the coverage report to the submission folder
-DESTDIR="$REPORT_DIR"
+DESTDIR="$REPORT_DIR/coverage_improve1"
 mkdir -p "$DESTDIR"
 rm -rf "${DESTDIR:?}"/*
 

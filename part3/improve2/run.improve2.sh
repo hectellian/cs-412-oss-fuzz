@@ -28,12 +28,12 @@ fi
 mkdir -p "$REPORT_DIR"
 
 pushd "$LIBPNG_DIR" >/dev/null
-git diff HEAD^ > "$DIFF_DIR/project.diff"
+git diff origin/libpng16...HEAD > "$DIFF_DIR/project.diff"
 echo "[+] Wrote libpng diff to $DIFF_DIR/project.diff"
 popd >/dev/null
 
 pushd "$OSS_FUZZ_DIR" >/dev/null
-git diff HEAD^ > "$DIFF_DIR/oss-fuzz.diff"
+git diff origin/master...HEAD > "$DIFF_DIR/oss-fuzz.diff"
 echo "[+] Wrote oss-fuzz diff to $DIFF_DIR/oss-fuzz.diff"
 popd >/dev/null
 

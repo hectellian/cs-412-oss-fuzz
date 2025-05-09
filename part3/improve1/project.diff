@@ -1,0 +1,199 @@
+diff --git a/contrib/oss-fuzz/generate_image.py b/contrib/oss-fuzz/generate_image.py
+new file mode 100644
+index 000000000..f8dfbb81b
+--- /dev/null
++++ b/contrib/oss-fuzz/generate_image.py
+@@ -0,0 +1,80 @@
++import os
++import struct
++import random
++import zipfile
++from PIL import Image, PngImagePlugin
++
++os.makedirs("seed", exist_ok=True)
++
++# === Images avec chunks spécifiques ===
++def create_text_png(path):
++    img = Image.new("RGB", (10, 10), "white")
++    meta = PngImagePlugin.PngInfo()
++    meta.add_text("Comment", "This is a test tEXt chunk")
++    img.save(path, pnginfo=meta)
++
++def create_itxt_png(path):
++    img = Image.new("RGB", (10, 10), "blue")
++    meta = PngImagePlugin.PngInfo()
++    meta.add_itxt("Description", "iTXt support example", lang="en", tkey="desc")
++    img.save(path, pnginfo=meta)
++
++def create_trns_png(path):
++    img = Image.new("RGBA", (10, 10), (255, 0, 0, 128))
++    img.save(path)
++
++def create_phys_png(path):
++    img = Image.new("RGB", (10, 10), "green")
++    meta = PngImagePlugin.PngInfo()
++    meta.add_text("pHYs", struct.pack(">IIB", 3780, 3780, 1))
++    img.save(path, pnginfo=meta)
++
++def create_srgb_png(path):
++    img = Image.new("RGB", (10, 10), "purple")
++    meta = PngImagePlugin.PngInfo()
++    meta.add_text("sRGB", struct.pack("B", 0))
++    img.save(path, pnginfo=meta)
++
++def create_offs_png(path):
++    img = Image.new("RGB", (10, 10), "yellow")
++    meta = PngImagePlugin.PngInfo()
++    meta.add_text("oFFs", struct.pack(">iiB", 100, 200, 1))
++    img.save(path, pnginfo=meta)
++
++def create_exif_png(path):
++    img = Image.new("RGB", (10, 10), "black")
++    meta = PngImagePlugin.PngInfo()
++    fake_exif = b"\x01\x02" * 50
++    meta.add_text("eXIf", fake_exif)
++    img.save(path, pnginfo=meta)
++
++# === Images aléatoires ===
++def create_random_png(path, width=10, height=10):
++    img = Image.new("RGB", (width, height))
++    pixels = [
++        (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
++        for _ in range(width * height)
++    ]
++    img.putdata(pixels)
++    img.save(path)
++
++# === Génération ===
++create_text_png("seed/text_chunk.png")
++create_itxt_png("seed/itxt_chunk.png")
++create_trns_png("seed/trns_alpha.png")
++create_phys_png("seed/phys_chunk.png")
++create_srgb_png("seed/srgb_chunk.png")
++create_offs_png("seed/offs_chunk.png")
++create_exif_png("seed/exif_chunk.png")
++
++# Génère 20 images aléatoires
++for i in range(20):
++    create_random_png(f"seed/random_{i:02d}.png")
++
++# === Archive ZIP ===
++with zipfile.ZipFile("libpng_read_fuzzer_seed_corpus.zip", "w") as zipf:
++    for filename in os.listdir("seed"):
++        if filename.endswith(".png"):
++            zipf.write(os.path.join("seed", filename), arcname=filename)
++
++print("✅ Done: images + corpus ZIP generated")
+\ No newline at end of file
+diff --git a/contrib/oss-fuzz/libpng_read_fuzzer_seed_corpus.zip b/contrib/oss-fuzz/libpng_read_fuzzer_seed_corpus.zip
+new file mode 100644
+index 000000000..7ef7cb1fd
+Binary files /dev/null and b/contrib/oss-fuzz/libpng_read_fuzzer_seed_corpus.zip differ
+diff --git a/contrib/oss-fuzz/seeds/exif_chunk.png b/contrib/oss-fuzz/seeds/exif_chunk.png
+new file mode 100644
+index 000000000..468014ab9
+Binary files /dev/null and b/contrib/oss-fuzz/seeds/exif_chunk.png differ
+diff --git a/contrib/oss-fuzz/seeds/itxt_chunk.png b/contrib/oss-fuzz/seeds/itxt_chunk.png
+new file mode 100644
+index 000000000..065d14654
+Binary files /dev/null and b/contrib/oss-fuzz/seeds/itxt_chunk.png differ
+diff --git a/contrib/oss-fuzz/seeds/offs_chunk.png b/contrib/oss-fuzz/seeds/offs_chunk.png
+new file mode 100644
+index 000000000..3b365d959
+Binary files /dev/null and b/contrib/oss-fuzz/seeds/offs_chunk.png differ
+diff --git a/contrib/oss-fuzz/seeds/phys_chunk.png b/contrib/oss-fuzz/seeds/phys_chunk.png
+new file mode 100644
+index 000000000..38517b485
+Binary files /dev/null and b/contrib/oss-fuzz/seeds/phys_chunk.png differ
+diff --git a/contrib/oss-fuzz/seeds/random_00.png b/contrib/oss-fuzz/seeds/random_00.png
+new file mode 100644
+index 000000000..3f34fd69e
+Binary files /dev/null and b/contrib/oss-fuzz/seeds/random_00.png differ
+diff --git a/contrib/oss-fuzz/seeds/random_01.png b/contrib/oss-fuzz/seeds/random_01.png
+new file mode 100644
+index 000000000..6e0a188a8
+Binary files /dev/null and b/contrib/oss-fuzz/seeds/random_01.png differ
+diff --git a/contrib/oss-fuzz/seeds/random_02.png b/contrib/oss-fuzz/seeds/random_02.png
+new file mode 100644
+index 000000000..0dd4999e8
+Binary files /dev/null and b/contrib/oss-fuzz/seeds/random_02.png differ
+diff --git a/contrib/oss-fuzz/seeds/random_03.png b/contrib/oss-fuzz/seeds/random_03.png
+new file mode 100644
+index 000000000..83854acb7
+Binary files /dev/null and b/contrib/oss-fuzz/seeds/random_03.png differ
+diff --git a/contrib/oss-fuzz/seeds/random_04.png b/contrib/oss-fuzz/seeds/random_04.png
+new file mode 100644
+index 000000000..38ca02ab9
+Binary files /dev/null and b/contrib/oss-fuzz/seeds/random_04.png differ
+diff --git a/contrib/oss-fuzz/seeds/random_05.png b/contrib/oss-fuzz/seeds/random_05.png
+new file mode 100644
+index 000000000..7d24de961
+Binary files /dev/null and b/contrib/oss-fuzz/seeds/random_05.png differ
+diff --git a/contrib/oss-fuzz/seeds/random_06.png b/contrib/oss-fuzz/seeds/random_06.png
+new file mode 100644
+index 000000000..b5a3a581b
+Binary files /dev/null and b/contrib/oss-fuzz/seeds/random_06.png differ
+diff --git a/contrib/oss-fuzz/seeds/random_07.png b/contrib/oss-fuzz/seeds/random_07.png
+new file mode 100644
+index 000000000..dbf23fd81
+Binary files /dev/null and b/contrib/oss-fuzz/seeds/random_07.png differ
+diff --git a/contrib/oss-fuzz/seeds/random_08.png b/contrib/oss-fuzz/seeds/random_08.png
+new file mode 100644
+index 000000000..c3b7da3b0
+Binary files /dev/null and b/contrib/oss-fuzz/seeds/random_08.png differ
+diff --git a/contrib/oss-fuzz/seeds/random_09.png b/contrib/oss-fuzz/seeds/random_09.png
+new file mode 100644
+index 000000000..160528fc4
+Binary files /dev/null and b/contrib/oss-fuzz/seeds/random_09.png differ
+diff --git a/contrib/oss-fuzz/seeds/random_10.png b/contrib/oss-fuzz/seeds/random_10.png
+new file mode 100644
+index 000000000..1ae0b8e8c
+Binary files /dev/null and b/contrib/oss-fuzz/seeds/random_10.png differ
+diff --git a/contrib/oss-fuzz/seeds/random_11.png b/contrib/oss-fuzz/seeds/random_11.png
+new file mode 100644
+index 000000000..14460a2ec
+Binary files /dev/null and b/contrib/oss-fuzz/seeds/random_11.png differ
+diff --git a/contrib/oss-fuzz/seeds/random_12.png b/contrib/oss-fuzz/seeds/random_12.png
+new file mode 100644
+index 000000000..f981993a7
+Binary files /dev/null and b/contrib/oss-fuzz/seeds/random_12.png differ
+diff --git a/contrib/oss-fuzz/seeds/random_13.png b/contrib/oss-fuzz/seeds/random_13.png
+new file mode 100644
+index 000000000..6d1ab06aa
+Binary files /dev/null and b/contrib/oss-fuzz/seeds/random_13.png differ
+diff --git a/contrib/oss-fuzz/seeds/random_14.png b/contrib/oss-fuzz/seeds/random_14.png
+new file mode 100644
+index 000000000..569da181e
+Binary files /dev/null and b/contrib/oss-fuzz/seeds/random_14.png differ
+diff --git a/contrib/oss-fuzz/seeds/random_15.png b/contrib/oss-fuzz/seeds/random_15.png
+new file mode 100644
+index 000000000..f05d2bf60
+Binary files /dev/null and b/contrib/oss-fuzz/seeds/random_15.png differ
+diff --git a/contrib/oss-fuzz/seeds/random_16.png b/contrib/oss-fuzz/seeds/random_16.png
+new file mode 100644
+index 000000000..36d5617ec
+Binary files /dev/null and b/contrib/oss-fuzz/seeds/random_16.png differ
+diff --git a/contrib/oss-fuzz/seeds/random_17.png b/contrib/oss-fuzz/seeds/random_17.png
+new file mode 100644
+index 000000000..67a1ec133
+Binary files /dev/null and b/contrib/oss-fuzz/seeds/random_17.png differ
+diff --git a/contrib/oss-fuzz/seeds/random_18.png b/contrib/oss-fuzz/seeds/random_18.png
+new file mode 100644
+index 000000000..1308db9bf
+Binary files /dev/null and b/contrib/oss-fuzz/seeds/random_18.png differ
+diff --git a/contrib/oss-fuzz/seeds/random_19.png b/contrib/oss-fuzz/seeds/random_19.png
+new file mode 100644
+index 000000000..67043af44
+Binary files /dev/null and b/contrib/oss-fuzz/seeds/random_19.png differ
+diff --git a/contrib/oss-fuzz/seeds/srgb_chunk.png b/contrib/oss-fuzz/seeds/srgb_chunk.png
+new file mode 100644
+index 000000000..8b25fd9ca
+Binary files /dev/null and b/contrib/oss-fuzz/seeds/srgb_chunk.png differ
+diff --git a/contrib/oss-fuzz/seeds/text_chunk.png b/contrib/oss-fuzz/seeds/text_chunk.png
+new file mode 100644
+index 000000000..ed2b2366a
+Binary files /dev/null and b/contrib/oss-fuzz/seeds/text_chunk.png differ
+diff --git a/contrib/oss-fuzz/seeds/trns_alpha.png b/contrib/oss-fuzz/seeds/trns_alpha.png
+new file mode 100644
+index 000000000..76f8a5fc1
+Binary files /dev/null and b/contrib/oss-fuzz/seeds/trns_alpha.png differ
