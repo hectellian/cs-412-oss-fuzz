@@ -1,71 +1,48 @@
 #!/bin/bash -eu
 
-# CONFIG
+# CONFG
 OSS_FUZZ="https://github.com/hectellian/oss-fuzz.git"
-LIBPNG_REPO="https://github.com/hectellian/libpng.git"
 PROJECT="libpng"
 PROJECT_FUZZER="libpng_read_fuzzer"
-BRANCH="improve2"
 TIMEOUT="14400" # 4h
 WORKDIR="$(pwd)"
-OSS_FUZZ_DIR="$WORKDIR/oss-fuzz-improve2"
-LIBPNG_DIR="$WORKDIR/libpng-improve2"
-REPORT_DIR="$WORKDIR/part3/improve2/coverage_improve2"
-DIFF_DIR="$WORKDIR/part3/improve2"
+OSS_FUZZ_DIR="$WORKDIR/oss-fuzz"
 BUILD_DIR="$OSS_FUZZ_DIR/build/out"
 COVERAGE_DIR="$BUILD_DIR/libpng/report_target/libpng_read_fuzzer/linux"
-CORPUS_DIR="$BUILD_DIR/improve2_corpus"
-
-# number of parallel fuzz runs and their tmp locations
+CORPUS_DIR="$BUILD_DIR/corpus"
 NUM_RUNS=3
+
+# locations for temporary corpora and final merged corpus
 declare -a TMP_CORPORA
 for i in $(seq 1 $NUM_RUNS); do
   TMP_CORPORA[$i]="$BUILD_DIR/tmp_corpus${i}"
 done
 
-# clone repos if needed
-if [ ! -d "$LIBPNG_DIR" ] ; then
-    git clone "$LIBPNG_REPO" "$LIBPNG_DIR" --branch "$BRANCH"
-fi
-
 if [ ! -d "$OSS_FUZZ_DIR" ] ; then
-    git clone "$OSS_FUZZ" "$OSS_FUZZ_DIR" --branch "$BRANCH"
+    git clone "$OSS_FUZZ" "$OSS_FUZZ_DIR"
 fi
-
-# generate diff files
-mkdir -p "$REPORT_DIR"
-
-pushd "$LIBPNG_DIR" >/dev/null
-git diff origin/libpng16...HEAD > "$DIFF_DIR/project.diff"
-echo "[+] Wrote libpng diff to $DIFF_DIR/project.diff"
-popd >/dev/null
-
-pushd "$OSS_FUZZ_DIR" >/dev/null
-git diff origin/master...HEAD > "$DIFF_DIR/oss-fuzz.diff"
-echo "[+] Wrote oss-fuzz diff to $DIFF_DIR/oss-fuzz.diff"
-popd >/dev/null
 
 # build the libpng fuzzers
 cd "$OSS_FUZZ_DIR"
 python3 infra/helper.py build_image "$PROJECT"
 python3 infra/helper.py build_fuzzers "$PROJECT"
 
-# ensure corpus dir exists
+# 4h campain run
 mkdir -p "$CORPUS_DIR"
-
-# 4h campaign run, 3 times into tmp corpora
-echo "[+] Running $PROJECT_FUZZER with improved seed corpus for $TIMEOUT (x$NUM_RUNS)"
 for i in $(seq 1 $NUM_RUNS); do
     echo "[+] Run #$i: fuzzing into ${TMP_CORPORA[$i]} for $TIMEOUT"
+    # timeout --foreground -k 1 "$TIMEOUT" python3 infra/helper.py run_fuzzer "$PROJECT" "$PROJECT_FUZZER" \
+    #   --corpus-dir "$CORPUS_DIR"
     docker run --rm --privileged \
-      -v "${TMP_CORPORA[$i]}":/corpus \
-      -v "$BUILD_DIR/$PROJECT":/out \
-      gcr.io/oss-fuzz/"$PROJECT" \
-      /out/"$PROJECT_FUZZER" \
+    -v "${TMP_CORPORA[$i]}":/corpus \
+    -v "$BUILD_DIR/$PROJECT":/out \
+    gcr.io/oss-fuzz/"$PROJECT" \
+    /out/"$PROJECT_FUZZER" \
         -artifact_prefix=/corpus/ \
         -max_total_time="$TIMEOUT" \
         /corpus
-    echo "[+] Finished run #$i"
+
+    echo "[+] Finished running $PROJECT_FUZZER"
 done
 
 # merge the 3 tmp corpora into one
@@ -83,10 +60,10 @@ python3 infra/helper.py coverage "$PROJECT" \
   --no-serve
 
 # copy the coverage report to the submission folder
-DESTDIR="$REPORT_DIR"
+DESTDIR="$WORKDIR/part3/coverage_noimprove"
 mkdir -p "$DESTDIR"
 rm -rf "${DESTDIR:?}"/*
 
 cp -r "$COVERAGE_DIR"/* "$DESTDIR"/
 
-echo "[+] Coverage report with improved seeds at $DESTDIR/index.html"
+echo "[+] Coverage report with seeds at $DESTDIR/index.html"

@@ -15,6 +15,14 @@ BUILD_DIR="$OSS_FUZZ_DIR/build/out"
 COVERAGE_DIR="$BUILD_DIR/libpng/report_target/libpng_read_fuzzer/linux"
 CORPUS_DIR="$BUILD_DIR/improve1_corpus"
 
+# number of parallel fuzz runs and their tmp locations
+NUM_RUNS=3
+declare -a TMP_CORPORA
+for i in $(seq 1 $NUM_RUNS); do
+  TMP_CORPORA[$i]="$BUILD_DIR/tmp_corpus${i}"
+done
+
+# clone repos (only on first run)
 if [ ! -d "$LIBPNG_DIR" ] ; then
     git clone "$LIBPNG_REPO" "$LIBPNG_DIR" --branch "$BRANCH"
 fi
@@ -23,9 +31,8 @@ if [ ! -d "$OSS_FUZZ_DIR" ] ; then
     git clone "$OSS_FUZZ" "$OSS_FUZZ_DIR" --branch "$BRANCH"
 fi
 
-# generate diff files (oss-fuzz and libpng as project)
+# diffs
 mkdir -p "$REPORT_DIR"
-
 pushd "$LIBPNG_DIR" >/dev/null
 git diff origin/libpng16...HEAD > "$REPORT_DIR/project.diff"
 echo "[+] Wrote libpng diff to $REPORT_DIR/project.diff"
@@ -41,18 +48,29 @@ cd "$OSS_FUZZ_DIR"
 python3 infra/helper.py build_image "$PROJECT"
 python3 infra/helper.py build_fuzzers "$PROJECT"
 
-# 4h campaign run
-echo "[+] Running $PROJECT_FUZZER with improved seed corpus for $TIMEOUT"
-docker run --rm --privileged \
-  -v "$CORPUS_DIR":/corpus \
-  -v "$BUILD_DIR/$PROJECT":/out \
-  gcr.io/oss-fuzz/"$PROJECT" \
-  /out/"$PROJECT_FUZZER" \
-    -artifact_prefix=/corpus/ \
-    -max_total_time="$TIMEOUT" \
-    /corpus
+# prepare corpus dir
+mkdir -p "$CORPUS_DIR"
 
-echo "[+] Finished running $PROJECT_FUZZER"
+# 4h campaign run, 3 times in parallel tmp corpora
+echo "[+] Running $PROJECT_FUZZER with improved seed corpus for $TIMEOUT (x$NUM_RUNS)"
+for i in $(seq 1 $NUM_RUNS); do
+    echo "[+] Run #$i: fuzzing into ${TMP_CORPORA[$i]} for $TIMEOUT"
+    docker run --rm --privileged \
+      -v "${TMP_CORPORA[$i]}":/corpus \
+      -v "$BUILD_DIR/$PROJECT":/out \
+      gcr.io/oss-fuzz/"$PROJECT" \
+      /out/"$PROJECT_FUZZER" \
+        -artifact_prefix=/corpus/ \
+        -max_total_time="$TIMEOUT" \
+        /corpus
+    echo "[+] Finished run #$i"
+done
+
+# merge the 3 tmp corpora into one
+echo "[+] Merging corpora into: $CORPUS_DIR"
+for i in $(seq 1 $NUM_RUNS); do
+  cp -r "${TMP_CORPORA[$i]}"/* "$CORPUS_DIR"/ || true
+done
 
 # rebuild with coverage report html
 echo "[+] Rebuilding with coverage report html"
