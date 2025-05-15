@@ -2,16 +2,17 @@
 set -e
 
 echo "[+] Cloning your fork of libpng..."
-git clone https://github.com/hectellian/libpng.git libpng_cve
+git clone https://github.com/hectellian/libpng.git libpng_cve > /dev/null
 cd libpng_cve
 
 echo "[+] Checking out vulnerable version..."
-git checkout -b cve-2019-7317 v1.6.36
+git checkout -b cve-2019-7317 v1.6.36 > /dev/null
 
 echo "[+] Configuring and building libpng with AddressSanitizer..."
-./configure CFLAGS="-g -O0 -fsanitize=address -fno-omit-frame-pointer" LDFLAGS="-fsanitize=address"
-make clean
-make -j$(nproc)
+./configure CFLAGS="-g -O0 -fsanitize=address -fno-omit-frame-pointer" \
+            LDFLAGS="-fsanitize=address" > /dev/null
+make clean > /dev/null
+make -j$(nproc) > /dev/null
 
 echo "[+] Creating trigger_cve_2019_7317.c..."
 cat > trigger_cve_2019_7317.c <<EOF
@@ -50,6 +51,9 @@ EOF
 echo "[+] Compiling the PoC..."
 gcc -fsanitize=address -g -O0 -I. -I./.libs -L.libs trigger_cve_2019_7317.c -o trigger_cve .libs/libpng16.a -lz -lm
 
-echo "[+] Running the PoC..."
-./trigger_cve
+echo "[+] Running the PoC (crash expected)..."
+./trigger_cve || echo "[!] PoC crashed as expected."
 
+echo "[+] Cleaning up..."
+cd ..
+rm -rf libpng_cve
